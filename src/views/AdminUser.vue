@@ -19,7 +19,9 @@
           <td v-show="user.isAdmin">admin</td>
           <td v-show="!user.isAdmin">user</td>
           <td v-show="user.isAdmin">
+            <p v-if="currentUser.id === user.id">當前使用者</p>
             <button
+              v-else
               type="button"
               class="btn btn-link"
               @click.stop.prevent="toggleIsAdmin(user.id)"
@@ -421,7 +423,18 @@ export default {
   },
   data() {
     return {
-      users: []
+      users: [],
+      currentUser: {
+        id: 1,
+        name: "root",
+        email: "root@example.com",
+        password:
+          "$2a$10$J9pLpJJ1Tzfe/ZcjdYwXdumyh.3F5E.w/HTxRcH./cl3azhgekgQe",
+        isAdmin: true,
+        image: null,
+        createdAt: "2020-02-28T14:38:32.000Z",
+        updatedAt: "2020-03-02T17:09:40.000Z"
+      }
     };
   },
   created() {
