@@ -3,7 +3,9 @@
     <NavTabs />
     <h1 class="mt-5">美食達人</h1>
     <hr />
-    <UsersTopContent v-for="user in users" :key="user.id" :initial-user="user" />
+    <div class="row text-center">
+      <UsersTopContent v-for="user in users" :key="user.id" :initial-user="user" />
+    </div>
   </div>
 </template>
 
