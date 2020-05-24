@@ -1,5 +1,5 @@
 <template>
-  <table class="table">
+  <table v-show="!isLoading" class="table">
     <thead class="thead-dark">
       <tr>
         <th scope="col">#</th>
@@ -44,7 +44,8 @@ import { Toast } from "./../utils/helpers";
 export default {
   data() {
     return {
-      restaurants: []
+      restaurants: [],
+      isLoading: true
     };
   },
   created() {
@@ -55,7 +56,9 @@ export default {
       try {
         const { data } = await adminAPI.restaurants.get();
         this.restaurants = data.restaurants;
+        this.isLoading = false;
       } catch (error) {
+        this.isLoading = false;
         console.log("error", error);
         Toast.fire({
           icon: "error",
