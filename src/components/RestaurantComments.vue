@@ -25,17 +25,10 @@
 
 <script>
 import { fromNowFilter } from "../utils/mixins.js";
+import usersAPI from "../apis/users";
+import { mapState } from "vuex";
+import { Toast } from "../utils/helpers";
 
-const dummyUser = {
-  currentUser: {
-    id: 1,
-    name: "管理者",
-    email: "root@example.com",
-    image: "https://i.pravatar.cc/300",
-    isAdmin: true
-  },
-  isAuthenticated: true
-};
 export default {
   mixins: [fromNowFilter],
   props: {
@@ -44,16 +37,22 @@ export default {
       required: true
     }
   },
-  data() {
-    return {
-      currentUser: dummyUser.currentUser
-    };
+  computed: {
+    ...mapState(["currentUser"])
   },
   methods: {
-    handleDeleteButtonClick(commentId) {
-      console.log("handleDeleteButtonClick", commentId);
-      // TODO: 請求 API 伺服器刪除 id 為 commentId 的評論
-      this.$emit("after-delete-comment", commentId);
+    async handleDeleteButtonClick(commentId) {
+      try {
+        const { data } = await usersAPI.deleteComments(commentId);
+        console.log("data", data);
+        this.$emit("after-delete-comment", commentId);
+      } catch (error) {
+        console.log("error", error);
+        Toast.fire({
+          icon: "error",
+          title: "無法刪除! 請稍後再試!"
+        });
+      }
     }
   }
 };

@@ -1,129 +1,84 @@
 <template>
-  <RestaurantDashboard :restaurant-data="restaurant" />
+  <div class="container py-5">
+    <Spinner v-if="isLoading" />
+    <template v-else>
+      <div>
+        <h1>{{ restaurant.name }}</h1>
+        <span class="badge badge-secondary mt-1 mb-3">
+          {{
+          restaurant.categoryName
+          }}
+        </span>
+      </div>
+
+      <hr />
+
+      <ul>
+        <li>評論數： {{ restaurant.commentsLength }}</li>
+        <li>瀏覽次數： {{ restaurant.viewCounts }}</li>
+      </ul>
+
+      <button type="button" class="btn btn-link" @click="$router.back()">回上一頁</button>
+    </template>
+  </div>
 </template>
 
 <script>
-import RestaurantDashboard from "../components/RestaurantDashboard";
-
-const dummyData = {
-  restaurant: {
-    id: 16,
-    name: "Aaliyah Lakin",
-    tel: "1-235-923-9473 x43870",
-    address: "1951 Jakubowski Villages",
-    opening_hours: "08:00",
-    description: "quidem",
-    image:
-      "https://loremflickr.com/320/240/restaurant,food/?random=91.06034163072859",
-    viewCounts: 9,
-    createdAt: "2020-02-28T14:38:32.000Z",
-    updatedAt: "2020-04-11T04:16:08.000Z",
-    CategoryId: 5,
-    Category: {
-      id: 5,
-      name: "素食料理",
-      createdAt: "2020-02-28T14:38:32.000Z",
-      updatedAt: "2020-02-28T14:38:32.000Z"
-    },
-    Comments: [
-      {
-        id: 16,
-        text: "Harum illo molestiae.",
-        UserId: 3,
-        RestaurantId: 16,
-        createdAt: "2020-02-28T14:38:32.000Z",
-        updatedAt: "2020-02-28T14:38:32.000Z",
-        User: {
-          id: 3,
-          name: "user2",
-          email: "user2@example.com",
-          password:
-            "$2a$10$VHKmtPqbcUzK46qxLllqj.w506U2N2TObMmnpdlNG2CLZPa1xzuTi",
-          isAdmin: true,
-          image: "https://i.imgur.com/IaCnj2S.jpg",
-          createdAt: "2020-02-28T14:38:32.000Z",
-          updatedAt: "2020-04-21T09:44:01.000Z"
-        }
-      },
-      {
-        id: 66,
-        text: "Laudantium eum vel id.",
-        UserId: 2,
-        RestaurantId: 16,
-        createdAt: "2020-02-28T14:38:32.000Z",
-        updatedAt: "2020-02-28T14:38:32.000Z",
-        User: {
-          id: 2,
-          name: "user1",
-          email: "user1@example.com",
-          password:
-            "$2a$10$NyaAtgRuHx3i7hHlnb5IXOC4Uk4.q1J1iQs3op.ymdCEh7.tOwcH2",
-          isAdmin: true,
-          image: null,
-          createdAt: "2020-02-28T14:38:32.000Z",
-          updatedAt: "2020-04-21T09:59:58.000Z"
-        }
-      },
-      {
-        id: 116,
-        text: "Sunt culpa ad sed ea.",
-        UserId: 3,
-        RestaurantId: 16,
-        createdAt: "2020-02-28T14:38:32.000Z",
-        updatedAt: "2020-02-28T14:38:32.000Z",
-        User: {
-          id: 3,
-          name: "user2",
-          email: "user2@example.com",
-          password:
-            "$2a$10$VHKmtPqbcUzK46qxLllqj.w506U2N2TObMmnpdlNG2CLZPa1xzuTi",
-          isAdmin: true,
-          image: "https://i.imgur.com/IaCnj2S.jpg",
-          createdAt: "2020-02-28T14:38:32.000Z",
-          updatedAt: "2020-04-21T09:44:01.000Z"
-        }
-      },
-      {
-        id: 4432,
-        text: "delicious!",
-        UserId: 1,
-        RestaurantId: 16,
-        createdAt: "2020-04-11T03:56:14.000Z",
-        updatedAt: "2020-04-11T03:56:14.000Z",
-        User: {
-          id: 1,
-          name: "root",
-          email: "root@example.com",
-          password:
-            "$2a$10$J9pLpJJ1Tzfe/ZcjdYwXdumyh.3F5E.w/HTxRcH./cl3azhgekgQe",
-          isAdmin: true,
-          image: null,
-          createdAt: "2020-02-28T14:38:32.000Z",
-          updatedAt: "2020-03-02T17:09:40.000Z"
-        }
-      }
-    ]
-  }
-};
+import restaurantsAPI from "./../apis/restaurants";
+// import Spinner from "./../components/Spinner";
+import { Toast } from "./../utils/helpers";
 export default {
+  name: "RestaurantDashboard",
   components: {
-    RestaurantDashboard
+    // Spinner
   },
   data() {
     return {
-      restaurant: {}
+      restaurant: {
+        id: -1,
+        name: "",
+        categoryName: "",
+        commentsLength: 0,
+        viewCounts: 0
+      },
+      isLoading: true
     };
   },
   created() {
-    this.fetchData();
+    const { id: restaurantId } = this.$route.params;
+    this.fetchRestaurant(restaurantId);
+  },
+  beforeRouteUpdate(to, from, next) {
+    const { id: restaurantId } = to.params;
+    this.fetchRestaurant(restaurantId);
+    next();
   },
   methods: {
-    fetchData() {
-      this.restaurant = {
-        ...dummyData.restaurant,
-        categoryName: dummyData.restaurant.Category.name,
-        commentsLength: dummyData.restaurant.Comments.length
-      };
+    async fetchRestaurant(restaurantId) {
+      try {
+        this.isLoading = true;
+        const { data } = await restaurantsAPI.getRestaurant({ restaurantId });
+        if (data.status === "error") {
+          throw new Error(data.message);
+        }
+        const { id, name, Category, Comments, viewCounts } = data.restaurant;
+        this.restaurant = {
+          ...this.restaurant,
+          id,
+          name,
+          categoryName: Category ? Category.name : "未分類",
+          commentsLength: Comments.length,
+          viewCounts
+        };
+        this.isLoading = false;
+      } catch (error) {
+        console.error(error.message);
+        this.isLoading = false;
+        Toast.fire({
+          icon: "error",
+          title: "無法取得餐廳資料，請稍後再試"
+        });
+      }
     }
   }
 };

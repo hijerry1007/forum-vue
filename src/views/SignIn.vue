@@ -88,6 +88,8 @@ export default {
 
         localStorage.setItem("token", data.token);
 
+        this.$store.commit("setCurrentUser", data.user);
+
         this.$router.push("/restaurants");
       } catch (error) {
         this.password = "";
@@ -97,36 +99,6 @@ export default {
           title: "請確認您輸入正確的帳號密碼"
         });
       }
-
-      // this.isProcessing = true;
-
-      // authorizationAPI
-      //   .signIn({
-      //     email: this.email,
-      //     password: this.password
-      //   })
-      //   .then(response => {
-      //     const { data } = response;
-
-      //     if (data.status !== "success") {
-      //       throw new Error(data.message);
-      //     }
-
-      //     localStorage.setItem("token", data.token);
-
-      //     this.$router.push("/restaurants");
-      //   })
-      //   .catch(error => {
-      //     this.password = "";
-      //     Toast.fire({
-      //       icon: "warning",
-      //       title: "請確認您輸入正確的帳號密碼"
-      //     });
-      //     this.isProcessing = false;
-      //     console.log("error", error);
-      //   });
-
-      //Todos: 送至後端驗證使用者
     }
   }
 };
