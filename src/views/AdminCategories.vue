@@ -112,10 +112,19 @@ export default {
         Toast.fire({ icon: "error", title: "無法新增類別，請稍後再試" });
       }
     },
-    deleteCategory(categoryId) {
-      this.categories = this.categories.filter(
-        category => category.id !== categoryId
-      );
+    async deleteCategory(categoryId) {
+      try {
+        const { data } = await adminAPI.categories.delete(categoryId);
+        if (data.status === "error") {
+          throw new Error(data.message);
+        }
+        this.categories = this.categories.filter(
+          category => category.id !== categoryId
+        );
+      } catch (error) {
+        console.log("error", error);
+        Toast.fire({ icon: "error", title: "無法刪除，請重新再試" });
+      }
     },
     toggleIsEditing(categoryId) {
       this.categories = this.categories.map(category => {
@@ -130,10 +139,20 @@ export default {
         return category;
       });
     },
-    updateCategory({ categoryId, name }) {
-      // TODO: 透過 API 去向伺服器更新餐廳類別名稱
-      console.log(name);
-      this.toggleIsEditing(categoryId);
+    async updateCategory({ categoryId, name }) {
+      try {
+        const { data } = await adminAPI.categories.update({
+          categoryId: categoryId,
+          name: name
+        });
+        if (data.status === "error") {
+          throw new Error(data.message);
+        }
+        this.toggleIsEditing(categoryId);
+      } catch (error) {
+        console.log("error", error);
+        Toast.fire({ icon: "error", title: "儲存失敗，請稍後再試" });
+      }
     },
     handleCancel(categoryId) {
       this.categories = this.categories.map(category => {
