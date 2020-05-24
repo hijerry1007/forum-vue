@@ -2,6 +2,7 @@
   <div class="container py-5">
     <!-- use NavTabs -->
     <NavTabs />
+    <Spinner v-if="isLoading" />
     <h1 class="mt-5">最新動態</h1>
     <hr />
     <div class="row">
@@ -25,17 +26,20 @@ import NewestRestaurants from "../components/NewestRestaurants";
 import NewestComments from "../components/NewestComments";
 import restaurantsFeedsAPI from "../apis/restaurantsFeeds";
 import { Toast } from "../utils/helpers";
+import Spinner from "../components/Spinner";
 
 export default {
   components: {
     NavTabs,
     NewestRestaurants,
-    NewestComments
+    NewestComments,
+    Spinner
   },
   data() {
     return {
       restaurants: [],
-      comments: []
+      comments: [],
+      isLoading: true
     };
   },
   created() {
@@ -51,7 +55,10 @@ export default {
         this.comments = comments.filter(
           comment => comment.Restaurant && comment.text
         );
+        this.isLoading = false;
       } catch (error) {
+        this.isLoading = false;
+
         Toast.fire({
           icon: "error",
           title: "伺服器忙碌中"
