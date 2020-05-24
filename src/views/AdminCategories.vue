@@ -9,7 +9,7 @@
           <input v-model="newCategoryName" type="text" class="form-control" placeholder="新增餐廳類別..." />
         </div>
         <div class="col-auto">
-          <button type="button" class="btn btn-primary" @click.stop.prevent="createCategory">新增</button>
+          <button type="button" class="btn btn-primary" @click.stop.prevent="createCategory()">新增</button>
         </div>
       </div>
     </form>
@@ -61,7 +61,6 @@
 
 <script>
 import AdminNav from "@/components/AdminNav";
-import { v4 as uuidv4 } from "uuid";
 import adminAPI from "../apis/admin";
 import { Toast } from "./../utils/helpers";
 
@@ -95,14 +94,23 @@ export default {
         });
       }
     },
-    createCategory(name) {
-      console.log(name);
-      this.categories.push({
-        id: uuidv4(),
-        name: this.newCategoryName
-      });
-
-      this.newCategoryName = "";
+    async createCategory() {
+      try {
+        const { data } = await adminAPI.categories.create({
+          name: this.newCategoryName
+        });
+        if (data.status === "error") {
+          throw new Error(data.message);
+        }
+        this.categories.push({
+          id: data.categoryId,
+          name: this.newCategoryName
+        });
+        this.newCategoryName = "";
+      } catch (error) {
+        console.log("error", error);
+        Toast.fire({ icon: "error", title: "無法新增類別，請稍後再試" });
+      }
     },
     deleteCategory(categoryId) {
       this.categories = this.categories.filter(
