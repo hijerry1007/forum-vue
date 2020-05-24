@@ -55,14 +55,14 @@ const routes = [
     component: () => import('../views/Dashboard')
   },
   {
-    path: '/users/:id',
-    name: 'users-profile',
-    component: () => import('../views/Profile')
-  },
-  {
     path: '/users/:id/edit',
     name: 'users-edit',
     component: () => import('../views/UserEdit.vue')
+  },
+  {
+    path: '/users/:id',
+    name: 'users-profile',
+    component: () => import('../views/Profile')
   },
   {
     path: '/admin',
