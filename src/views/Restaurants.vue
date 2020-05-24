@@ -54,8 +54,8 @@ export default {
   created() {
     const { page = "", categoryId = "" } = this.$route.query;
     this.fetchRestaurants({
-      page,
-      categoryId
+      queryPage: page,
+      queryCategoryId: categoryId
     });
   },
   beforeRouteUpdate(to, from, next) {
