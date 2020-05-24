@@ -22,7 +22,7 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="category in categories" :key="category.id">
+        <tr v-show="!isLoading" v-for="category in categories" :key="category.id">
           <th scope="row">{{ category.id }}</th>
           <td class="position-relative">
             <div v-show="!category.isEditing" class="category-name">{{ category.name }}</div>
@@ -46,7 +46,8 @@
               type="button"
               class="btn btn-link mr-2"
               @click.stop.prevent="updateCategory({ categoryId: category.id, name: category.name })"
-            >Save</button>
+              :disabled="isProcessing"
+            >{{ isProcessing? '儲存中' : 'Save'}}</button>
             <button
               type="button"
               class="btn btn-link mr-2"
@@ -71,7 +72,9 @@ export default {
   data() {
     return {
       categories: [],
-      newCategoryName: ""
+      newCategoryName: "",
+      isProcessing: false,
+      isLoading: true
     };
   },
   created() {
@@ -86,7 +89,10 @@ export default {
           isEditing: false,
           nameCached: ""
         }));
+        this.isLoading = false;
       } catch (error) {
+        this.isLoading = false;
+
         console.log("error", error);
         Toast.fire({
           icon: "error",
@@ -96,6 +102,7 @@ export default {
     },
     async createCategory() {
       try {
+        this.isProcessing = true;
         const { data } = await adminAPI.categories.create({
           name: this.newCategoryName
         });
@@ -107,6 +114,7 @@ export default {
           name: this.newCategoryName
         });
         this.newCategoryName = "";
+        this.isProcessing = false;
       } catch (error) {
         console.log("error", error);
         Toast.fire({ icon: "error", title: "無法新增類別，請稍後再試" });
@@ -141,6 +149,8 @@ export default {
     },
     async updateCategory({ categoryId, name }) {
       try {
+        this.isProcessing = true;
+
         const { data } = await adminAPI.categories.update({
           categoryId: categoryId,
           name: name
@@ -149,6 +159,7 @@ export default {
           throw new Error(data.message);
         }
         this.toggleIsEditing(categoryId);
+        this.isProcessing = false;
       } catch (error) {
         console.log("error", error);
         Toast.fire({ icon: "error", title: "儲存失敗，請稍後再試" });
