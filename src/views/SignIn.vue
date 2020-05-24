@@ -34,7 +34,11 @@
         />
       </div>
 
-      <button class="btn btn-lg btn-primary btn-block mb-3" type="submit">Submit</button>
+      <button
+        class="btn btn-lg btn-primary btn-block mb-3"
+        type="submit"
+        :disabled="isProcessing"
+      >Submit</button>
 
       <div class="text-center mb-3">
         <p>
@@ -55,42 +59,72 @@ export default {
   data() {
     return {
       email: "",
-      password: ""
+      password: "",
+      isProcessing: false
     };
   },
   methods: {
-    handleSubmit() {
-      if (!this.email || !this.password) {
+    async handleSubmit() {
+      try {
+        if (!this.email || !this.password) {
+          Toast.fire({
+            icon: "warning",
+            title: "請填入帳號和密碼"
+          });
+          return;
+        }
+
+        this.isProcessing = true;
+
+        const response = await authorizationAPI.signIn({
+          email: this.email,
+          password: this.password
+        });
+        const { data, statusText } = response;
+        console.log(statusText);
+        if (data.status !== "success") {
+          throw new Error(data.message);
+        }
+
+        localStorage.setItem("token", data.token);
+
+        this.$router.push("/restaurants");
+      } catch (error) {
+        this.password = "";
+        this.isProcessing = false;
         Toast.fire({
           icon: "warning",
-          title: "請填入帳號和密碼"
+          title: "請確認您輸入正確的帳號密碼"
         });
       }
 
-      authorizationAPI
-        .signIn({
-          email: this.email,
-          password: this.password
-        })
-        .then(response => {
-          const { data } = response;
+      // this.isProcessing = true;
 
-          if (data.status !== "success") {
-            throw new Error(data.message);
-          }
+      // authorizationAPI
+      //   .signIn({
+      //     email: this.email,
+      //     password: this.password
+      //   })
+      //   .then(response => {
+      //     const { data } = response;
 
-          localStorage.setItem("token", data.token);
+      //     if (data.status !== "success") {
+      //       throw new Error(data.message);
+      //     }
 
-          this.$router.push("/restaurants");
-        })
-        .catch(error => {
-          this.password = "";
-          Toast.fire({
-            icon: "warning",
-            title: "請確認您輸入正確的帳號密碼"
-          });
-          console.log("error", error);
-        });
+      //     localStorage.setItem("token", data.token);
+
+      //     this.$router.push("/restaurants");
+      //   })
+      //   .catch(error => {
+      //     this.password = "";
+      //     Toast.fire({
+      //       icon: "warning",
+      //       title: "請確認您輸入正確的帳號密碼"
+      //     });
+      //     this.isProcessing = false;
+      //     console.log("error", error);
+      //   });
 
       //Todos: 送至後端驗證使用者
     }
